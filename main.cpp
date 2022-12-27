@@ -55,17 +55,18 @@ void Registration::logIn()
     {
         login >> un;
         login >> pw;
-        if (un == userName && pw == password | userName == "admin" && password == "admin")
-        {
-            cout << "LOGGEDIN\n";
-            return;
-        }
+       // if (un == userName && pw == password | userName == "admin" && password == "admin")
+       // {
+       //     cout << "LOGGEDIN\n";
+       //     return;
+       // }
     }
 }
-enum cType
-{
-   p
-};
+
+
+
+
+
 class category
 {
     string name;
@@ -79,7 +80,6 @@ public:
     static int count;
     virtual void setInfo();
     virtual void dispInfo() const;
-    virtual cType get_category();
     static void add();
     static void display();
     static void write();
@@ -127,86 +127,13 @@ void product::dispInfo() const
     category::dispInfo();
 }
 
-/*class outfitCategory : public category
-{
-    string categoryName;
-
-public:
-    outfitCategory() : categoryName("") {} // default constructor
-    outfitCategory(string cn, string n, unsigned int i, unsigned int q, float p) : category(n, i, q, p) { categoryName = cn; }
-    void setInfo();
-    void dispInfo() const;
-};
-void outfitCategory::setInfo()
-{
-    cout << "Enter category Name : ";
-    cin >> categoryName;
-    category::setInfo();
-}
-void outfitCategory::dispInfo() const
-{
-    cout << "CATEGORY NAME : " << categoryName << "\n";
-    category::dispInfo();
-}
-
-class groceryCategory : public category
-{
-    string categoryName;
-
-public:
-    groceryCategory() : categoryName("") {}                                                                                 // default constructor
-    groceryCategory(string cn, string n, unsigned int i, unsigned int q, float p) : category(n, i, q, p) { categoryName = cn; } // paremeterized constructor
-    void setInfo();
-    void dispInfo() const;
-};
-void groceryCategory::setInfo()
-{
-    cout << "Enter category Name : ";
-    cin >> categoryName;
-    category::setInfo();
-}
-void groceryCategory::dispInfo() const
-{
-    cout << "CATEGORY NAME : " << categoryName << "\n";
-    category::dispInfo();
-}*/
-
-cType category::get_category()
-{
- if (typeid(*this) == typeid(product))
-    {
-        return p;
-    }
-    else
-    {
-        cerr << "BAD CATEGORY TYPE\n";
-    }
-    return p;
-}
 
 void category::add()
 {
-    int option;
     cout << "\n----------------------------------------------------------\n";
     cout << "|                1. TO ADD PRODUCT CATEGORY                 |\n";
     cout << "\n----------------------------------------------------------\n";
-    cout << "Enter an Option : ";
-    cin >> option;
-    switch (option)
-    {
-    case 1:
-        sh[count] = new product;
-        break;
-    case 2:
-      //  sh[count] = new product;
-        break;
-    case 3:
-       // sh[count] = new outfitCategory;
-        break;
-    default:
-        cout << "INVALID OPTION\n";
-        break;
-    }
+     sh[count] = new product;
     sh[count++]->setInfo();
 }
 void category::display()
@@ -214,15 +141,6 @@ void category::display()
     for (int i = 0; i < count; i++)
     {
         cout << i + 1;
-        switch (sh[i]->get_category())
-        {
-        case p:
-            cout << " : -----------PRODUCT CATEGORY-----------------\n";
-            break;
-        default:
-            cerr << "BAD CATEGORY TYPE \n";
-            break;
-        }
         sh[i]->dispInfo();
         cout << endl;
     }
@@ -230,10 +148,8 @@ void category::display()
 
 void category::write()
 {
-    int size;
     cout << " Writing  " << count << " categories.\n";
     ofstream oufile; // open ofstream in binary
-    cType ct;        // type of each category object
     oufile.open("categoryDataBase.DAT", ios::trunc | ios::binary);
     if (!oufile)
     {
@@ -242,16 +158,7 @@ void category::write()
     }
     for (int j = 0; j < count; j++) // for every category object
     {                               // get its type
-        ct = sh[j]->get_category();
-        // write type to file
-        oufile.write((char*)&ct, sizeof(ct));
-        switch (ct) // find its size
-        {
-        case p:
-            size = sizeof(product);
-            break;
-        } // write Categories object to file
-        oufile.write((char*)(sh[j]), size);
+        oufile.write((char*)(sh[j]), sizeof(product));
         if (!oufile)
         {
             cout << "\nCant write to file\n";
@@ -262,8 +169,6 @@ void category::write()
 
 void category::read()
 {
-    int size=0;        // size of person object
-    cType ct = p;    // type of person
     ifstream infile; // open ifstream in binary
     infile.open("categoryDataBase.DAT", ios::binary);
     if (!infile)
@@ -274,7 +179,6 @@ void category::read()
     count = 0;
     while (true)
     { // read type of next employee
-        infile.read((char*)&ct, sizeof(ct));
         if (infile.eof()) // quit loop on eof
             break;
         if (!infile) // error reading type
@@ -282,31 +186,43 @@ void category::read()
             cout << "\nCant read type from file\n";
             return;
         }
-        switch (ct)
-        {       // make new person
-        case p:
-            sh[count] = new product;
-            size = sizeof(product);
-            break;
-        default:
-            cout << "\nUnknown type in file\n";
-            return;
-        } // read data from file into it
-        infile.read((char*)sh[count], size);
-        if (!infile) // error but not eof
-        {
-            cout << "\nCant read data from file\n";
-            return;
-        }
+         sh[count] = new product;
+        infile.read((char*)sh[count], sizeof(product));
         count++; // count categories
     }            // end while
     cout << " Reading " << count << " employees\n";
 }
 
+
+class admin {
+    category categ;
+public:
+    void viewCategory();
+    void addCategory();
+    void writetofile();
+    void readfromfile();
+    void displayallcategories();
+    void searchCategory();
+    void deleteCategory();
+
+};
+void admin::viewCategory() {
+    categ.display();
+}
+void admin::addCategory() {
+    categ.add();
+}
+void admin::writetofile() {categ.write();}
+void admin::readfromfile() { categ.read(); }
+void admin::displayallcategories() { categ.display(); }
+void admin::searchCategory(){}
+void admin::deleteCategory(){}
+
 int main()
 {
 
     Registration registr;
+    admin admn;
     int option;
     
 
@@ -335,16 +251,20 @@ int main()
             break;
         case 3:
             cout << "ADDING NEW CATEGORY \n";
-            category::add();
+           // category::add();
+            admn.addCategory();
             break;
         case 4:
-            category::write();
+           // category::write();
+            admn.writetofile();
             break;
         case 5:
-            category::read();
+           // category::read();
+            admn.readfromfile();
             break;
         case 6:
-            category::display();
+           // category::display();
+            admn.displayallcategories();
             break;
         case 9:
             cout << "Program is terminated successfully\n";
